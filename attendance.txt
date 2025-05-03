@@ -1,1 +1,2 @@
-MECARD:N:1001;; - PresentMECARD:N:1001;; - PresentMECARD:N:1001;; - PresentMECARD:N:1001;; - PresentMECARD:N:1001;; - PresentMECARD:N:1001;; - PresentMECARD:N:1001;; - PresentMECARD:N:1001;; - Present
+Ali Khan - 1001 - Present - 2025-05-03 16:29:55
+Ali Khan - 1001 - Present - 2025-05-03 16:31:01

@@ -1,24 +1,48 @@
 import java.io.*;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class AttendanceMarker {
     public static boolean checkStudent(String id) throws IOException {
-        List<String> students = new ArrayList<>();
         BufferedReader reader = new BufferedReader(new FileReader("students.txt"));
         String line;
         while ((line = reader.readLine()) != null) {
-            students.add(line.trim());
+            if (line.trim().startsWith(id + ":")) {
+                reader.close();
+                return true;
+            }
         }
         reader.close();
-        return students.contains(id);
+        return false;
     }
 
     public static void markPresent(String id) throws IOException {
-        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+        String name = getStudentName(id);
+        if (name == null) {
+            System.out.println(id + " is not a registered student.");
+            return;
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String timestamp = now.format(formatter);
+
         BufferedWriter writer = new BufferedWriter(new FileWriter("attendance.txt", true));
-        writer.write(id + " - Present at " + timestamp);
-        writer.newLine(); // Add line break
+        writer.write(name + " - " + id + " - Present - " + timestamp + "\n");
         writer.close();
+    }
+
+    public static String getStudentName(String id) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader("students.txt"));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (line.trim().startsWith(id + ":")) {
+                reader.close();
+                return line.split(":", 2)[1].trim();
+            }
+        }
+        reader.close();
+        return null;
     }
 }

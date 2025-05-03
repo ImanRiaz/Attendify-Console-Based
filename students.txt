@@ -1,3 +1,3 @@
-MECARD:N:1001;;
-MECARD:N:1002;;
-MECARD:N:1003;;
+1001: Ali Khan
+1002: Sara Malik
+1003: Usman Rafiq
