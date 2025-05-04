@@ -1,0 +1,2 @@
+AbdulMoiz,password123,Physics
+Imran,securepass,Chemistry
