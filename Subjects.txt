@@ -1,2 +1,2 @@
-Physics:1001,1002
+Physics:1001,1002,1003
 Chemistry:1002,1003

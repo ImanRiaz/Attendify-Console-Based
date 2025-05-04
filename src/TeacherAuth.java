@@ -1,5 +1,4 @@
 import java.io.*;
-import java.util.*;
 
 public class TeacherAuth {
     public static String login(String username, String password) throws IOException {
