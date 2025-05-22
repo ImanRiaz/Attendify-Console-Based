@@ -5,23 +5,66 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         try (Scanner scanner = new Scanner(System.in)) {
-            // Teacher login
-            System.out.print("Enter teacher username: ");
-            String username = scanner.nextLine();
-            System.out.print("Enter password: ");
-            String password = scanner.nextLine();
+            int failedAttempts = 0;
+            int lockMultiplier = 0;
+
+            String subject = null;
+
+            // Login loop with retry and incremental lockout
+            while (true) {
+                System.out.print("Enter teacher username: ");
+                String username = scanner.nextLine();
+                System.out.print("Enter password: ");
+                String password = scanner.nextLine();
+
+                try {
+                    subject = TeacherAuth.login(username, password);
+
+                    if (subject != null) {
+                        System.out.println("Login successful. Subject: " + subject);
+                        break; // exit loop after successful login
+                    } else {
+                        failedAttempts++;
+                        System.out.println("Invalid login.");
+
+                        if (failedAttempts % 3 == 0) {
+                            lockMultiplier++;
+                            int lockTimeSeconds = lockMultiplier * 60;
+
+                    for (int i = lockTimeSeconds; i > 0; i--) {
+                       System.out.print("\rAccount locked. Try again after: " + i + " seconds");
+                        System.out.flush();
+                      Thread.sleep(1000);
+                    }
+                    System.out.print("\r                                      \r"); // Clear the line after countdown
+
+                        }
+                    }
+
+                } catch (Exception e) {
+                    System.out.println("An error occurred: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+
+            // Post-login: dashboard menu
+            System.out.println("\nWelcome to the Teacher Dashboard for subject: " + subject);
+            System.out.println("Choose an option:");
+            System.out.println("1. View Class Attendance History");
+            System.out.println("2. Start Attendance");
+
+            System.out.print("Enter choice (1 or 2): ");
+            String choice = scanner.nextLine();
+
+            if (choice.equals("1")) {
+                TeacherDashboard.showDashboard(subject);
+                return;
+            }
+
+            // If attendance is selected
+            System.out.println("Waiting for QR code...");
 
             try {
-                // Authenticate teacher
-                String subject = TeacherAuth.login(username, password);
-                if (subject == null) {
-                    System.out.println("Invalid login. Exiting...");
-                    return;
-                }
-
-                System.out.println("Login successful. Subject: " + subject);
-                System.out.println("Waiting for QR code...");
-
                 Map<String, String> studentMap = AttendanceMarker.loadStudents();
 
                 long lastScanTime = System.currentTimeMillis();
@@ -39,29 +82,27 @@ public class Main {
                         String qrData = QRDecoder.decode(frame);
 
                         if (qrData != null && !qrData.isEmpty()) {
-                           // System.out.println("QR Detected: " + qrData);
-                            lastScanTime = System.currentTimeMillis(); // Reset timeout timer
+                            lastScanTime = System.currentTimeMillis();
 
-                            // Extract student ID from QR code
                             String studentId = extractStudentId(qrData);
 
                             if (studentId == null || !studentMap.containsKey(studentId)) {
-                                System.out.println(" Student not found in student records.");
+                                System.out.println("Student not found in student records.");
                                 Thread.sleep(2000);
-                                continue; // Keep scanning
+                                continue;
                             }
 
                             boolean enrolled = AttendanceMarker.isStudentEnrolledInSubject(studentId, subject);
                             if (!enrolled) {
-                                System.out.println(" Student is not enrolled in your subject.");
+                                System.out.println("Student is not enrolled in your subject.");
                                 Thread.sleep(2000);
                                 continue;
                             }
 
                             String studentName = studentMap.get(studentId);
                             AttendanceMarker.markSubjectAttendance(studentId, studentName, subject);
-                            System.out.println( studentName + " (" + studentId + ") marked present for " + subject);
-                            Thread.sleep(3000); // Optional delay before next scan
+                            System.out.println(studentName + " (" + studentId + ") marked present for " + subject);
+                            Thread.sleep(3000);
                         }
                     }
 
@@ -69,7 +110,7 @@ public class Main {
                 }
 
             } catch (Exception e) {
-                System.out.println(" An error occurred: " + e.getMessage());
+                System.out.println("An error occurred during attendance: " + e.getMessage());
                 e.printStackTrace();
             } finally {
                 WebcamReader.releaseCamera();
@@ -82,12 +123,9 @@ public class Main {
     private static String extractStudentId(String qrData) {
         try {
             if (qrData != null && qrData.startsWith("MECARD:N:")) {
-                // Remove the "MECARD:N:" part and the ";;" at the end
-                qrData = qrData.substring(9, qrData.length() - 2).trim(); // Extract the student ID correctly
-              //  System.out.println("Extracted Student ID: " + qrData);
+                qrData = qrData.substring(9, qrData.length() - 2).trim();
                 return qrData;
             }
-            // If raw student ID, return it directly (just in case)
             return qrData.trim();
         } catch (Exception e) {
             System.out.println("Failed to parse student ID from QR data.");
