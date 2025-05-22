@@ -1,2 +1,6 @@
-AbdulMoiz,password123,Physics
-Imran,securepass,Chemistry
+AbdulMoiz,password123,DataStructures
+Imran,securepass,Algorithms
+Ayesha,ayesha321,OperatingSystems
+Kamran,kamran456,DatabaseSystems
+Hina,hina789,ComputerNetworks
+Fahad,fahad2025,ArtificialIntelligence
