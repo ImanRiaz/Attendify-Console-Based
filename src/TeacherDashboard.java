@@ -1,13 +1,13 @@
 import java.io.*;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class TeacherDashboard {
-    public static void showDashboard(String subject) {
+    public static String showDashboard(String subject) {
         String enrolledFile = "student_" + subject.toLowerCase() + ".txt";
         String attendanceFile = subject + ".txt";
 
-        Set<String> enrolledStudents = new HashSet<>();
+        Set<String> enrolledStudentIds = new HashSet<>();
+        Map<String, String> studentIdToName = new HashMap<>();
         Map<String, List<String>> attendanceByDate = new TreeMap<>();
 
         // Load enrolled students
@@ -15,13 +15,16 @@ public class TeacherDashboard {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(":");
-                if (parts.length >= 1) {
-                    enrolledStudents.add(parts[0].trim());
+                if (parts.length >= 2) {
+                    String id = parts[0].trim();
+                    String name = parts[1].trim();
+                    enrolledStudentIds.add(id);
+                    studentIdToName.put(id, name);
                 }
             }
         } catch (IOException e) {
             System.out.println("Error reading enrolled students file.");
-            return;
+            return "MAIN";
         }
 
         // Group attendance entries by date
@@ -37,40 +40,98 @@ public class TeacherDashboard {
             }
         } catch (IOException e) {
             System.out.println("Error reading attendance file.");
-            return;
+            return "MAIN";
         }
 
-        // Display class-wise stats
-        System.out.println("\nClass Attendance History:");
-        int classCount = 1;
-        for (String date : attendanceByDate.keySet()) {
-            List<String> entries = attendanceByDate.get(date);
-            Set<String> markedIds = new HashSet<>();
+        Scanner scanner = new Scanner(System.in);
 
-            int present = 0;
-            int leave = 0;
+        List<String> dateList = new ArrayList<>(attendanceByDate.keySet());
+        int index = 0;
+
+        while (index < dateList.size()) {
+            String date = dateList.get(index);
+            List<String> entries = attendanceByDate.get(date);
+
+            int present = 0, leave = 0;
+            Set<String> markedIds = new HashSet<>();
+            List<String> presentList = new ArrayList<>();
+            List<String> leaveList = new ArrayList<>();
 
             for (String entry : entries) {
                 String[] parts = entry.split(" - ");
                 if (parts.length >= 4) {
+                    String name = parts[0].trim();
                     String studentId = parts[1].trim();
                     String status = parts[2].trim();
 
                     markedIds.add(studentId);
 
-                    if (status.equalsIgnoreCase("Present")) present++;
-                    else if (status.equalsIgnoreCase("Leave")) leave++;
+                    if (status.equalsIgnoreCase("Present")) {
+                        present++;
+                        presentList.add(name + " (" + studentId + ")");
+                    } else if (status.equalsIgnoreCase("Leave")) {
+                        leave++;
+                        leaveList.add(name + " (" + studentId + ")");
+                    }
                 }
             }
 
-            int totalEnrolled = enrolledStudents.size();
+            int totalEnrolled = enrolledStudentIds.size();
             int absent = totalEnrolled - present - leave;
 
-            String leaveText = (leave == 0) ? "No Leave" : leave + " Leave";
-            System.out.println("Class " + classCount + ": " + date + " - " + present + " Present, " + absent + " Absent, " + leaveText);
-            classCount++;
+            List<String> absentList = new ArrayList<>();
+            for (String id : enrolledStudentIds) {
+                if (!markedIds.contains(id)) {
+                    String name = studentIdToName.getOrDefault(id, "Unknown");
+                    absentList.add(name + " (" + id + ")");
+                }
+            }
+
+            System.out.println("\n========== Class Attendance History ==========");
+            System.out.println("Class " + (index + 1) + ": " + date);
+            System.out.println("Present: " + present + " | Absent: " + absent + " | Leave: " + leave);
+
+            System.out.print("View student lists? (Y/N): ");
+            String viewDetails = scanner.nextLine().trim();
+
+            if (viewDetails.equalsIgnoreCase("Y")) {
+                System.out.println("\n>> Present Students:");
+                if (presentList.isEmpty()) System.out.println("  None");
+                else presentList.forEach(s -> System.out.println("  " + s));
+
+                System.out.println("\n>> Leave Students:");
+                if (leaveList.isEmpty()) System.out.println("  None");
+                else leaveList.forEach(s -> System.out.println("  " + s));
+
+                System.out.println("\n>> Absent Students:");
+                if (absentList.isEmpty()) System.out.println("  None");
+                else absentList.forEach(s -> System.out.println("  " + s));
+            }
+
+            index++;
+
+            if (index >= dateList.size()) {
+                System.out.println("No more records. Returning to main menu...");
+                return "MAIN";
+            }
+
+            System.out.print("\nDo you want to view the next class? (Y to continue, M for main menu, E to exit): ");
+            String next = scanner.nextLine().trim();
+
+            if (next.equalsIgnoreCase("Y")) {
+                continue;
+            } else if (next.equalsIgnoreCase("M")) {
+                System.out.println("Returning to main menu...");
+                return "MAIN";
+            } else if (next.equalsIgnoreCase("E")) {
+                System.out.println("Exiting...");
+                return "EXIT";
+            } else {
+                System.out.println("Invalid input. Returning to main menu...");
+                return "MAIN";
+            }
         }
 
-        System.out.println("===============================================");
+        return "MAIN";
     }
 }

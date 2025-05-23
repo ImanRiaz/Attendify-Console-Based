@@ -1,4 +1,4 @@
-AbdulMoiz,password123,DataStructures
+AbdulMoiz,password123,Physics
 Imran,securepass,Algorithms
 Ayesha,ayesha321,OperatingSystems
 Kamran,kamran456,DatabaseSystems

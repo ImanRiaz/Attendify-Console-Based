@@ -9,7 +9,6 @@ public class Main {
         try (Scanner scanner = new Scanner(System.in)) {
             int failedAttempts = 0;
             int lockMultiplier = 0;
-
             String subject = null;
 
             // Login loop with retry and incremental lockout
@@ -24,7 +23,7 @@ public class Main {
 
                     if (subject != null) {
                         System.out.println("Login successful. Subject: " + subject);
-                        break; // exit loop after successful login
+                        break;
                     } else {
                         failedAttempts++;
                         System.out.println("Invalid login.");
@@ -33,117 +32,115 @@ public class Main {
                             lockMultiplier++;
                             int lockTimeSeconds = lockMultiplier * 60;
 
-                    for (int i = lockTimeSeconds; i > 0; i--) {
-                       System.out.print("\rAccount locked. Try again after: " + i + " seconds");
-                        System.out.flush();
-                      Thread.sleep(1000);
-                    }
-                    System.out.print("\r                                      \r"); // Clear the line after countdown
-
+                            for (int i = lockTimeSeconds; i > 0; i--) {
+                                System.out.print("\rAccount locked. Try again after: " + i + " seconds");
+                                System.out.flush();
+                                Thread.sleep(1000);
+                            }
+                            System.out.print("\r                                      \r"); // Clear the line
                         }
                     }
-
                 } catch (Exception e) {
                     System.out.println("An error occurred: " + e.getMessage());
                     e.printStackTrace();
                 }
             }
 
-            // Post-login: dashboard menu
-            System.out.println("\nWelcome to the Teacher Dashboard for subject: " + subject);
-            System.out.println("Choose an option:");
-            System.out.println("1. View Class Attendance History");
-            System.out.println("2. Start Attendance");
+            // Post-login: dashboard loop
+            while (true) {
+                System.out.println("\nWelcome to the Teacher Dashboard for subject: " + subject);
+                System.out.println("Choose an option:");
+                System.out.println("1. View Class Attendance History");
+                System.out.println("2. Start Attendance");
+                System.out.println("3. Logout");
+                System.out.print("Enter choice (1, 2 or 3): ");
+                String choice = scanner.nextLine();
 
-            System.out.print("Enter choice (1 or 2): ");
-            String choice = scanner.nextLine();
+                if (choice.equals("1")) {
+                    TeacherDashboard.showDashboard(subject); // returns here after viewing
+                } else if (choice.equals("2")) {
+                    String enrollmentFileName = "student_" + subject.toLowerCase() + ".txt";
+                    File enrollmentFile = new File(enrollmentFileName);
 
-            if (choice.equals("1")) {
-                TeacherDashboard.showDashboard(subject);
-                return;
-            }
-            // Ensure subject enrollment file exists
-            String enrollmentFileName = "student_" + subject.toLowerCase() + ".txt";
-            File enrollmentFile = new File(enrollmentFileName);
-
-            if (!enrollmentFile.exists()) {
-              // Create empty file
-              try {
-              if (enrollmentFile.createNewFile()) {
-                System.out.println("Created enrollment file: " + enrollmentFileName);
-              }
-             System.out.println("No students enrolled for " + subject + ". Please enroll students to start attendance.");
-                } catch (IOException e) {
-                System.out.println("Failed to create enrollment file: " + enrollmentFileName);
-                 e.printStackTrace();
-             }
-                return;
-            }
-            if (enrollmentFile.length() == 0) {
-             System.out.println(enrollmentFileName + " is empty. Please enroll students before starting attendance.");
-             return;
-            
-
-
-            // If attendance is selected
-            System.out.println("Waiting for QR code...");
-
-            try {
-                Map<String, String> studentMap = AttendanceMarker.loadStudents();
-
-                long lastScanTime = System.currentTimeMillis();
-                long timeout = 2* 60 * 1000; // 2mines
-
-                while (true) {
-                    if (System.currentTimeMillis() - lastScanTime > timeout) {
-                        System.out.println("Timeout: No QR code detected for 2 minutes Exiting...");
-                        break;
-                    }
-
-                    BufferedImage frame = WebcamReader.captureFrame();
-
-                    if (frame != null) {
-                        String qrData = QRDecoder.decode(frame);
-
-                        if (qrData != null && !qrData.isEmpty()) {
-                            lastScanTime = System.currentTimeMillis();
-
-                            String studentId = extractStudentId(qrData);
-
-                            if (studentId == null || !studentMap.containsKey(studentId)) {
-                                System.out.println("Student not found in student records.");
-                                Thread.sleep(2000);
-                                continue;
+                    if (!enrollmentFile.exists()) {
+                        try {
+                            if (enrollmentFile.createNewFile()) {
+                                System.out.println("Created enrollment file: " + enrollmentFileName);
                             }
-
-                            boolean enrolled = AttendanceMarker.isStudentEnrolledInSubject(studentId, subject);
-                            if (!enrolled) {
-                                System.out.println("Student is not enrolled in your subject.");
-                                Thread.sleep(2000);
-                                continue;
-                            }
-
-                            String studentName = studentMap.get(studentId);
-                            AttendanceMarker.markSubjectAttendance(studentId, studentName, subject);
-                            System.out.println(studentName + " (" + studentId + ") marked present for " + subject);
-                            Thread.sleep(3000);
+                            System.out.println("No students enrolled for " + subject + ". Please enroll students to start attendance.");
+                        } catch (IOException e) {
+                            System.out.println("Failed to create enrollment file: " + enrollmentFileName);
+                            e.printStackTrace();
                         }
+                        continue;
                     }
 
-                    Thread.sleep(500);
-                }
+                    if (enrollmentFile.length() == 0) {
+                        System.out.println(enrollmentFileName + " is empty. Please enroll students before starting attendance.");
+                        continue;
+                    }
 
-            } catch (Exception e) {
-                System.out.println("An error occurred during attendance: " + e.getMessage());
-                e.printStackTrace();
-            } finally {
-                WebcamReader.releaseCamera();
-                System.out.println("Camera released. Exiting...");
+                    System.out.println("Waiting for QR code...");
+
+                    try {
+                        Map<String, String> studentMap = AttendanceMarker.loadStudents();
+                        long lastScanTime = System.currentTimeMillis();
+                        long timeout = 2 * 60 * 1000; // 2 minutes
+
+                        while (true) {
+                            if (System.currentTimeMillis() - lastScanTime > timeout) {
+                                System.out.println("Timeout: No QR code detected for 2 minutes. Returning to main menu...");
+                                break;
+                            }
+
+                            BufferedImage frame = WebcamReader.captureFrame();
+
+                            if (frame != null) {
+                                String qrData = QRDecoder.decode(frame);
+
+                                if (qrData != null && !qrData.isEmpty()) {
+                                    lastScanTime = System.currentTimeMillis();
+
+                                    String studentId = extractStudentId(qrData);
+                                    if (studentId == null || !studentMap.containsKey(studentId)) {
+                                        System.out.println("Student not found in student records.");
+                                        Thread.sleep(2000);
+                                        continue;
+                                    }
+
+                                    boolean enrolled = AttendanceMarker.isStudentEnrolledInSubject(studentId, subject);
+                                    if (!enrolled) {
+                                        System.out.println("Student is not enrolled in your subject.");
+                                        Thread.sleep(2000);
+                                        continue;
+                                    }
+
+                                    String studentName = studentMap.get(studentId);
+                                    AttendanceMarker.markSubjectAttendance(studentId, studentName, subject);
+                                    System.out.println(studentName + " (" + studentId + ") marked present for " + subject);
+                                    Thread.sleep(3000);
+                                }
+                            }
+
+                            Thread.sleep(500);
+                        }
+                    } catch (Exception e) {
+                        System.out.println("An error occurred during attendance: " + e.getMessage());
+                        e.printStackTrace();
+                    } finally {
+                        WebcamReader.releaseCamera();
+                        System.out.println("Camera released.");
+                    }
+                } else if (choice.equals("3")) {
+                    System.out.println("Logging out. Goodbye!");
+                    break;
+                } else {
+                    System.out.println("Invalid input. Please try again.");
+                }
             }
         }
     }
 
-    // Robust QR text parser
     private static String extractStudentId(String qrData) {
         try {
             if (qrData != null && qrData.startsWith("MECARD:N:")) {

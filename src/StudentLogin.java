@@ -138,7 +138,7 @@ public class StudentLogin {
             }
 
             if (totalClasses == 0) {
-                return subjectName + ": No attendance data available.";
+                return subjectName + ": No attendance marked yet.";
             }
 
             double percentage = (presentClasses * 100.0) / totalClasses;
