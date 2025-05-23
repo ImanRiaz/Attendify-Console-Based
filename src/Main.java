@@ -10,23 +10,40 @@ public class Main {
             int failedAttempts = 0;
             int lockMultiplier = 0;
             String subject = null;
+                System.out.println("+----------------------------------------+");
+                System.out.println("|         TEACHER LOGIN PORTAL          |");
+                System.out.println("+----------------------------------------+");
 
             // Login loop with retry and incremental lockout
             while (true) {
+                
                 System.out.print("Enter teacher username: ");
-                String username = scanner.nextLine();
+                String username = scanner.nextLine().trim();
+                while (username.isEmpty()) {
+                System.out.print("Username cannot be empty. Please enter again: ");
+                username = scanner.nextLine().trim();
+                }
+
                 System.out.print("Enter password: ");
-                String password = scanner.nextLine();
+                String password = scanner.nextLine().trim();
+                while (password.isEmpty()) {
+                 System.out.print("Password cannot be empty. Please enter again: ");
+                password = scanner.nextLine().trim();
+                }
+
 
                 try {
                     subject = TeacherAuth.login(username, password);
 
                     if (subject != null) {
-                        System.out.println("Login successful. Subject: " + subject);
+                        System.out.println("\n+-----------------------------+");
+                        System.out.println("|    Login successful!        |");
+                        System.out.println("+-----------------------------+");
+                        System.out.println("Subject: " + subject);
                         break;
                     } else {
                         failedAttempts++;
-                        System.out.println("Invalid login.");
+                        System.out.println("\nInvalid login attempt.");
 
                         if (failedAttempts % 3 == 0) {
                             lockMultiplier++;
@@ -48,11 +65,16 @@ public class Main {
 
             // Post-login: dashboard loop
             while (true) {
-                System.out.println("\nWelcome to the Teacher Dashboard for subject: " + subject);
-                System.out.println("Choose an option:");
-                System.out.println("1. View Class Attendance History");
-                System.out.println("2. Start Attendance");
-                System.out.println("3. Logout");
+                System.out.println("\n===============================================");
+                System.out.println("|               TEACHER DASHBOARD             |");
+                System.out.println("===============================================");
+
+                System.out.println("Welcome to the Teacher Dashboard for subject: " + subject);
+                System.out.println("+-----------------------------------------------+");
+                System.out.println("| 1. View Class Attendance History             |");
+                System.out.println("| 2. Start Attendance                          |");
+                System.out.println("| 3. Logout                                    |");
+                System.out.println("+-----------------------------------------------+");
                 System.out.print("Enter choice (1, 2 or 3): ");
                 String choice = scanner.nextLine();
 
@@ -80,6 +102,9 @@ public class Main {
                         continue;
                     }
 
+                    System.out.println("\n===============================================");
+                    System.out.println("|        QR ATTENDANCE SCANNER ACTIVE        |");
+                    System.out.println("===============================================");
                     System.out.println("Waiting for QR code...");
 
                     try {
@@ -132,7 +157,9 @@ public class Main {
                         System.out.println("Camera released.");
                     }
                 } else if (choice.equals("3")) {
-                    System.out.println("Logging out. Goodbye!");
+                    System.out.println("\n+-----------------------+");
+                    System.out.println("| Logging out. Goodbye!|");
+                    System.out.println("+-----------------------+");
                     break;
                 } else {
                     System.out.println("Invalid input. Please try again.");

@@ -11,6 +11,10 @@ public class StudentLogin {
             String studentId = null;
 
             while (true) {
+                System.out.println("+----------------------------------------+");
+                System.out.println("|            STUDENT LOGIN PORTAL        |");
+                System.out.println("+----------------------------------------+");
+
                 System.out.print("Enter Student ID: ");
                 studentId = scanner.nextLine().trim();
 
@@ -18,11 +22,13 @@ public class StudentLogin {
                 String password = scanner.nextLine().trim();
 
                 if (validateStudentLogin(studentId, password)) {
-                    System.out.println("Login successful!");
+                    System.out.println("\n+-----------------------------+");
+                    System.out.println("|     Login successful!      |");
+                    System.out.println("+-----------------------------+");
                     break;
                 } else {
                     failedAttempts++;
-                    System.out.println("Invalid credentials. Attempt " + failedAttempts + "/3");
+                    System.out.println("\nInvalid credentials. Attempt " + failedAttempts + "/3");
 
                     if (failedAttempts % 3 == 0) {
                         System.out.println("Too many failed attempts. Try again after " + lockoutDuration + " seconds:");
@@ -32,7 +38,6 @@ public class StudentLogin {
                 }
             }
 
-            // Show dashboard
             showStudentDashboard(studentId);
         }
     }
@@ -42,7 +47,7 @@ public class StudentLogin {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] studentData = line.split(":");
-                if (studentData.length < 3) continue; // skip malformed lines
+                if (studentData.length < 3) continue;
 
                 String id = studentData[0].trim();
                 String storedPassword = studentData[2].trim();
@@ -66,7 +71,9 @@ public class StudentLogin {
     private static void showStudentDashboard(String studentId) throws IOException {
         try (Scanner scanner = new Scanner(System.in)) {
             while (true) {
-                System.out.println("\n===== Student Dashboard =====");
+                System.out.println("\n===========================================");
+                System.out.println("|           STUDENT DASHBOARD            |");
+                System.out.println("===========================================");
                 System.out.println("1. View Attendance Summary");
                 System.out.println("2. Exit");
                 System.out.print("Enter your choice: ");
@@ -75,7 +82,9 @@ public class StudentLogin {
                 if (choice.equals("1")) {
                     displayAttendanceSummary(studentId);
                 } else if (choice.equals("2")) {
-                    System.out.println("Logging out...");
+                    System.out.println("\n+--------------------+");
+                    System.out.println("| Logging out...     |");
+                    System.out.println("+--------------------+");
                     break;
                 } else {
                     System.out.println("Invalid choice. Try again.");
@@ -100,11 +109,12 @@ public class StudentLogin {
                 String subjectName = parts[0].trim();
                 String studentList = parts[1];
 
-                // Check if the student is enrolled in the subject
                 if (!studentList.contains(studentId)) continue;
 
                 String attendanceSummary = getAttendanceForSubject(studentId, subjectName);
-                System.out.println("\n" + attendanceSummary);
+                System.out.println("\n+-------------------------------------------+");
+                System.out.println(attendanceSummary);
+                System.out.println("+-------------------------------------------+");
             }
         }
     }
@@ -143,13 +153,13 @@ public class StudentLogin {
 
             double percentage = (presentClasses * 100.0) / totalClasses;
 
-            String summary = subjectName + ": Total Classes = " + totalClasses +
+            String summary = subjectName + ": Total = " + totalClasses +
                     ", Present = " + presentClasses +
                     ", Absent = " + (totalClasses - presentClasses) +
-                    "\nAttendance percentage: " + String.format("%.2f", percentage) + "%";
+                    "\nAttendance %: " + String.format("%.2f", percentage) + "%";
 
             if (percentage < 75) {
-                summary += "\n You are not eligible for exams in " + subjectName;
+                summary += "\n*** Not eligible for exams in " + subjectName + " ***";
             }
 
             return summary;

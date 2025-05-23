@@ -2,7 +2,7 @@ import java.io.*;
 import java.util.*;
 
 public class TeacherDashboard {
-    public static String showDashboard(String subject) {
+    public static void showDashboard(String subject) {
         String enrolledFile = "student_" + subject.toLowerCase() + ".txt";
         String attendanceFile = subject + ".txt";
 
@@ -24,7 +24,7 @@ public class TeacherDashboard {
             }
         } catch (IOException e) {
             System.out.println("Error reading enrolled students file.");
-            return "MAIN";
+            return;
         }
 
         // Group attendance entries by date
@@ -40,98 +40,110 @@ public class TeacherDashboard {
             }
         } catch (IOException e) {
             System.out.println("Error reading attendance file.");
-            return "MAIN";
+            return;
         }
 
         Scanner scanner = new Scanner(System.in);
 
-        List<String> dateList = new ArrayList<>(attendanceByDate.keySet());
-        int index = 0;
+        while (true) {
+            System.out.println("\n========== Class Attendance History ==========");
 
-        while (index < dateList.size()) {
-            String date = dateList.get(index);
-            List<String> entries = attendanceByDate.get(date);
+            List<String> dateList = new ArrayList<>(attendanceByDate.keySet());
+            int index = 0;
 
-            int present = 0, leave = 0;
-            Set<String> markedIds = new HashSet<>();
-            List<String> presentList = new ArrayList<>();
-            List<String> leaveList = new ArrayList<>();
+            while (index < dateList.size()) {
+                String date = dateList.get(index);
+                List<String> entries = attendanceByDate.get(date);
 
-            for (String entry : entries) {
-                String[] parts = entry.split(" - ");
-                if (parts.length >= 4) {
-                    String name = parts[0].trim();
-                    String studentId = parts[1].trim();
-                    String status = parts[2].trim();
+                int present = 0, leave = 0;
+                Set<String> markedIds = new HashSet<>();
+                List<String> presentList = new ArrayList<>();
+                List<String> leaveList = new ArrayList<>();
 
-                    markedIds.add(studentId);
+                for (String entry : entries) {
+                    String[] parts = entry.split(" - ");
+                    if (parts.length >= 4) {
+                        String name = parts[0].trim();
+                        String studentId = parts[1].trim();
+                        String status = parts[2].trim();
 
-                    if (status.equalsIgnoreCase("Present")) {
-                        present++;
-                        presentList.add(name + " (" + studentId + ")");
-                    } else if (status.equalsIgnoreCase("Leave")) {
-                        leave++;
-                        leaveList.add(name + " (" + studentId + ")");
+                        markedIds.add(studentId);
+
+                        if (status.equalsIgnoreCase("Present")) {
+                            present++;
+                            presentList.add(name + " (" + studentId + ")");
+                        } else if (status.equalsIgnoreCase("Leave")) {
+                            leave++;
+                            leaveList.add(name + " (" + studentId + ")");
+                        }
                     }
                 }
-            }
 
-            int totalEnrolled = enrolledStudentIds.size();
-            int absent = totalEnrolled - present - leave;
+                int totalEnrolled = enrolledStudentIds.size();
+                int absent = totalEnrolled - present - leave;
 
-            List<String> absentList = new ArrayList<>();
-            for (String id : enrolledStudentIds) {
-                if (!markedIds.contains(id)) {
-                    String name = studentIdToName.getOrDefault(id, "Unknown");
-                    absentList.add(name + " (" + id + ")");
+                List<String> absentList = new ArrayList<>();
+                for (String id : enrolledStudentIds) {
+                    if (!markedIds.contains(id)) {
+                        String name = studentIdToName.getOrDefault(id, "Unknown");
+                        absentList.add(name + " (" + id + ")");
+                    }
+                }
+
+                System.out.println("\nClass " + (index + 1) + ": " + date);
+                System.out.println("Present: " + present + " | Absent: " + absent + " | Leave: " + leave);
+
+                // Validate view details input
+                String viewDetails;
+                while (true) {
+                    System.out.print("View student lists? (Y/N): ");
+                    viewDetails = scanner.nextLine().trim().toUpperCase();
+                    if (viewDetails.equals("Y") || viewDetails.equals("N")) break;
+                    System.out.println("Invalid input. Please enter Y or N.");
+                }
+
+                if (viewDetails.equals("Y")) {
+                    System.out.println("\n>> Present Students:");
+                    if (presentList.isEmpty()) System.out.println("  None");
+                    else presentList.forEach(s -> System.out.println("  " + s));
+
+                    System.out.println("\n>> Leave Students:");
+                    if (leaveList.isEmpty()) System.out.println("  None");
+                    else leaveList.forEach(s -> System.out.println("  " + s));
+
+                    System.out.println("\n>> Absent Students:");
+                    if (absentList.isEmpty()) System.out.println("  None");
+                    else absentList.forEach(s -> System.out.println("  " + s));
+                }
+
+                index++;
+
+                if (index >= dateList.size()) {
+                    System.out.println("No more records. Returning to main menu...");
+                    return;
+                }
+
+                // Validate next class navigation input
+                String next;
+                while (true) {
+                    System.out.print("\nDo you want to view the next class? (Y to continue, M for main menu, E to exit): ");
+                    next = scanner.nextLine().trim().toUpperCase();
+                    if (next.equals("Y") || next.equals("M") || next.equals("E")) break;
+                    System.out.println("Invalid input. Please enter Y, M, or E.");
+                }
+
+                if (next.equals("Y")) {
+                    continue;
+                } else if (next.equals("M")) {
+                    System.out.println("Returning to main menu...");
+                    return;
+                } else if (next.equals("E")) {
+                    System.out.println("Exiting...");
+                    System.exit(0);
                 }
             }
 
-            System.out.println("\n========== Class Attendance History ==========");
-            System.out.println("Class " + (index + 1) + ": " + date);
-            System.out.println("Present: " + present + " | Absent: " + absent + " | Leave: " + leave);
-
-            System.out.print("View student lists? (Y/N): ");
-            String viewDetails = scanner.nextLine().trim();
-
-            if (viewDetails.equalsIgnoreCase("Y")) {
-                System.out.println("\n>> Present Students:");
-                if (presentList.isEmpty()) System.out.println("  None");
-                else presentList.forEach(s -> System.out.println("  " + s));
-
-                System.out.println("\n>> Leave Students:");
-                if (leaveList.isEmpty()) System.out.println("  None");
-                else leaveList.forEach(s -> System.out.println("  " + s));
-
-                System.out.println("\n>> Absent Students:");
-                if (absentList.isEmpty()) System.out.println("  None");
-                else absentList.forEach(s -> System.out.println("  " + s));
-            }
-
-            index++;
-
-            if (index >= dateList.size()) {
-                System.out.println("No more records. Returning to main menu...");
-                return "MAIN";
-            }
-
-            System.out.print("\nDo you want to view the next class? (Y to continue, M for main menu, E to exit): ");
-            String next = scanner.nextLine().trim();
-
-            if (next.equalsIgnoreCase("Y")) {
-                continue;
-            } else if (next.equalsIgnoreCase("M")) {
-                System.out.println("Returning to main menu...");
-                return "MAIN";
-            } else if (next.equalsIgnoreCase("E")) {
-                System.out.println("Exiting...");
-                return "EXIT";
-            } else {
-                System.out.println("Invalid input. Returning to main menu...");
-                return "MAIN";
-            }
+            System.out.println("===============================================");
         }
-
-        return "MAIN";
     }
 }
