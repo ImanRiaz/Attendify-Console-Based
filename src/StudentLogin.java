@@ -7,33 +7,34 @@ public class StudentLogin {
     private static int lockoutDuration = 60; // seconds
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        Scanner scanner = new Scanner(System.in);
-        String studentId = null;
+        try (Scanner scanner = new Scanner(System.in)) {
+            String studentId = null;
 
-        while (true) {
-            System.out.print("Enter Student ID: ");
-            studentId = scanner.nextLine().trim();
+            while (true) {
+                System.out.print("Enter Student ID: ");
+                studentId = scanner.nextLine().trim();
 
-            System.out.print("Enter Password: ");
-            String password = scanner.nextLine().trim();
+                System.out.print("Enter Password: ");
+                String password = scanner.nextLine().trim();
 
-            if (validateStudentLogin(studentId, password)) {
-                System.out.println("Login successful!");
-                break;
-            } else {
-                failedAttempts++;
-                System.out.println("Invalid credentials. Attempt " + failedAttempts + "/3");
+                if (validateStudentLogin(studentId, password)) {
+                    System.out.println("Login successful!");
+                    break;
+                } else {
+                    failedAttempts++;
+                    System.out.println("Invalid credentials. Attempt " + failedAttempts + "/3");
 
-                if (failedAttempts % 3 == 0) {
-                    System.out.println("Too many failed attempts. Try again after " + lockoutDuration + " seconds:");
-                    countdown(lockoutDuration);
-                    lockoutDuration += 60;
+                    if (failedAttempts % 3 == 0) {
+                        System.out.println("Too many failed attempts. Try again after " + lockoutDuration + " seconds:");
+                        countdown(lockoutDuration);
+                        lockoutDuration += 60;
+                    }
                 }
             }
-        }
 
-        // Show dashboard
-        showStudentDashboard(studentId);
+            // Show dashboard
+            showStudentDashboard(studentId);
+        }
     }
 
     private static boolean validateStudentLogin(String studentId, String password) throws IOException {
@@ -63,22 +64,22 @@ public class StudentLogin {
     }
 
     private static void showStudentDashboard(String studentId) throws IOException {
-        Scanner scanner = new Scanner(System.in);
+        try (Scanner scanner = new Scanner(System.in)) {
+            while (true) {
+                System.out.println("\n===== Student Dashboard =====");
+                System.out.println("1. View Attendance Summary");
+                System.out.println("2. Exit");
+                System.out.print("Enter your choice: ");
+                String choice = scanner.nextLine().trim();
 
-        while (true) {
-            System.out.println("\n===== Student Dashboard =====");
-            System.out.println("1. View Attendance Summary");
-            System.out.println("2. Exit");
-            System.out.print("Enter your choice: ");
-            String choice = scanner.nextLine().trim();
-
-            if (choice.equals("1")) {
-                displayAttendanceSummary(studentId);
-            } else if (choice.equals("2")) {
-                System.out.println("Logging out...");
-                break;
-            } else {
-                System.out.println("Invalid choice. Try again.");
+                if (choice.equals("1")) {
+                    displayAttendanceSummary(studentId);
+                } else if (choice.equals("2")) {
+                    System.out.println("Logging out...");
+                    break;
+                } else {
+                    System.out.println("Invalid choice. Try again.");
+                }
             }
         }
     }

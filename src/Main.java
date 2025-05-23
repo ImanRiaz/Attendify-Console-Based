@@ -1,4 +1,6 @@
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -60,6 +62,28 @@ public class Main {
                 TeacherDashboard.showDashboard(subject);
                 return;
             }
+            // Ensure subject enrollment file exists
+            String enrollmentFileName = "student_" + subject.toLowerCase() + ".txt";
+            File enrollmentFile = new File(enrollmentFileName);
+
+            if (!enrollmentFile.exists()) {
+              // Create empty file
+              try {
+              if (enrollmentFile.createNewFile()) {
+                System.out.println("Created enrollment file: " + enrollmentFileName);
+              }
+             System.out.println("No students enrolled for " + subject + ". Please enroll students to start attendance.");
+                } catch (IOException e) {
+                System.out.println("Failed to create enrollment file: " + enrollmentFileName);
+                 e.printStackTrace();
+             }
+                return;
+            }
+            if (enrollmentFile.length() == 0) {
+             System.out.println(enrollmentFileName + " is empty. Please enroll students before starting attendance.");
+             return;
+            
+
 
             // If attendance is selected
             System.out.println("Waiting for QR code...");
@@ -68,11 +92,11 @@ public class Main {
                 Map<String, String> studentMap = AttendanceMarker.loadStudents();
 
                 long lastScanTime = System.currentTimeMillis();
-                long timeout = 3 * 60 * 1000; // 3 minutes
+                long timeout = 2* 60 * 1000; // 2mines
 
                 while (true) {
                     if (System.currentTimeMillis() - lastScanTime > timeout) {
-                        System.out.println("Timeout: No QR code detected for 3 minutes. Exiting...");
+                        System.out.println("Timeout: No QR code detected for 2 minutes Exiting...");
                         break;
                     }
 
