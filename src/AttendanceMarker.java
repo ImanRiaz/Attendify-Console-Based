@@ -1,17 +1,14 @@
 import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
 public class AttendanceMarker {
 
-    // Check if the student is registered in the system
     public static boolean checkStudent(String studentId) throws IOException {
         try (BufferedReader reader = new BufferedReader(new FileReader("students.txt"))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                line = line.trim();  // Trim to remove leading/trailing spaces
+                line = line.trim();
                 String[] studentData = line.split(":");
                 if (studentData[0].equals(studentId)) {
                     return true;
@@ -21,44 +18,51 @@ public class AttendanceMarker {
         return false;
     }
 
-    // Mark attendance for the student in the teacher's subject file
     public static void markAttendance(String studentId, String subject, String teacherId) throws IOException {
-        // Check if the teacher's subject file exists
         String fileName = subject + ".txt";
         File file = new File(fileName);
-        boolean isNewFile = false;
-
-        // If file does not exist, create a new one
         if (!file.exists()) {
             file.createNewFile();
-            isNewFile = true;
         }
 
-        // Append attendance entry to the teacher's subject file
+        if (isMarkedToday(studentId, subject)) {
+            System.out.println("Attendance already marked today for " + studentId);
+            return;
+        }
+
+        String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+        String entry = studentId + " - Present - " + date;
+
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, true))) {
-            String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-            String entry = studentId + " - Present - " + date;
-
-            if (!isNewFile) {
-                // Check if the student has already been marked present for the class
-                try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        if (line.contains(studentId) && line.contains("Present")) {
-                            System.out.println("Attendance already marked for " + studentId);
-                            return;
-                        }
-                    }
-                }
-            }
-
-            // Write the attendance entry if not already marked
             writer.write(entry + "\n");
             System.out.println("Attendance marked for student " + studentId);
         }
     }
 
-    // Calculate attendance percentage for the student in the subject
+    public static boolean isMarkedToday(String studentId, String subject) throws IOException {
+        String fileName = subject + ".txt";
+        File file = new File(fileName);
+        if (!file.exists()) return false;
+
+        String today = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(" - ");
+                if (parts.length >= 3) {
+                    String id = parts[0].contains(" ") ? parts[1].trim() : parts[0].trim();
+                    String datePart = parts[parts.length - 1].split(" ")[0];
+                    if (id.equals(studentId) && datePart.equals(today)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     public static String getAttendance(String studentId, String subject) throws IOException {
         String fileName = subject + ".txt";
         File file = new File(fileName);
@@ -73,10 +77,13 @@ public class AttendanceMarker {
 
             while ((line = reader.readLine()) != null) {
                 String[] data = line.split(" - ");
-                if (data[0].equals(studentId)) {
-                    totalClasses++;
-                    if (data[1].equals("Present")) {
-                        presentClasses++;
+                if (data.length >= 2) {
+                    String id = data[0].contains(" ") ? data[1].trim() : data[0].trim();
+                    if (id.equals(studentId)) {
+                        totalClasses++;
+                        if (data[1].equals("Present") || data[2].equals("Present")) {
+                            presentClasses++;
+                        }
                     }
                 }
             }
@@ -90,18 +97,17 @@ public class AttendanceMarker {
         }
     }
 
-    // Load the students from the 'students.txt' file into a map (studentId -> studentName)
     public static Map<String, String> loadStudents() throws IOException {
         Map<String, String> studentMap = new HashMap<>();
         try (BufferedReader reader = new BufferedReader(new FileReader("students.txt"))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                line = line.trim();  // Trim spaces
+                line = line.trim();
                 String[] parts = line.split(":");
                 if (parts.length == 3) {
                     String studentId = parts[0].trim();
                     String studentName = parts[1].trim();
-                    studentMap.put(studentId, studentName);  // Add to the map
+                    studentMap.put(studentId, studentName);
                 }
             }
         }
@@ -115,12 +121,12 @@ public class AttendanceMarker {
             System.out.println("Enrollment file " + fileName + " does not exist.");
             return false;
         }
-    
+
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
-                String[] parts = line.split(":");  // Handles both "1001" and "1001:Ali Khan"
+                String[] parts = line.split(":");
                 if (parts[0].equals(studentId)) {
                     return true;
                 }
@@ -128,45 +134,27 @@ public class AttendanceMarker {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    
+
         return false;
     }
-    
-    
 
-    // Mark attendance in a subject file with student name and subject details
     public static void markSubjectAttendance(String studentId, String studentName, String subject) throws IOException {
         String fileName = subject + ".txt";
         File file = new File(fileName);
-        boolean isNewFile = false;
-
-        // If file does not exist, create a new one
         if (!file.exists()) {
             file.createNewFile();
-            isNewFile = true;
         }
 
-        // Append attendance entry to the subject file
+        if (isMarkedToday(studentId, subject)) {
+            System.out.println("Attendance already marked today for " + studentId);
+            return;
+        }
+
+        String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+        String entry = studentName + " - " + studentId + " - Present - " + date;
+
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, true))) {
-            String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-            String entry = studentName + " - " + studentId + " - Present - " + date;
-
-            if (!isNewFile) {
-                // Check if the student has already been marked present for the class
-                try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        if (line.contains(studentId) && line.contains("Present")) {
-                            System.out.println("Attendance already marked for " + studentId);
-                            return;
-                        }
-                    }
-                }
-            }
-
-            // Write the attendance entry if not already marked
             writer.write(entry + "\n");
-         //   System.out.println("Attendance marked for student " + studentName + " in subject " + subject);
         }
     }
 }

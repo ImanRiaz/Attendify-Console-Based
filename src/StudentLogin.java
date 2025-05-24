@@ -1,5 +1,6 @@
 import java.io.*;
-import java.util.Scanner;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class StudentLogin {
 
@@ -127,42 +128,61 @@ public class StudentLogin {
             return subjectName + ": No attendance data available.";
         }
 
+        Map<String, Set<String>> dateAttendanceMap = new HashMap<>();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String today = dateFormat.format(new Date());
+
         try (BufferedReader attendanceReader = new BufferedReader(new FileReader(attendanceFile))) {
             String line;
-            int totalClasses = 0;
-            int presentClasses = 0;
-
             while ((line = attendanceReader.readLine()) != null) {
-                String[] attendanceData = line.split(" - ");
-                if (attendanceData.length < 3) continue;
+                String[] data = line.split(" - ");
+                if (data.length < 4) continue;
 
-                String id = attendanceData[1].trim();
-                String status = attendanceData[2].trim();
+                String id = data[1].trim();
+                String status = data[2].trim();
+                String datetime = data[3].trim();
+                String dateOnly = datetime.split(" ")[0];
 
-                if (id.equals(studentId)) {
-                    totalClasses++;
-                    if (status.equalsIgnoreCase("Present")) {
-                        presentClasses++;
-                    }
+                dateAttendanceMap.putIfAbsent(dateOnly, new HashSet<>());
+                if (status.equalsIgnoreCase("Present")) {
+                    dateAttendanceMap.get(dateOnly).add(id);
                 }
             }
-
-            if (totalClasses == 0) {
-                return subjectName + ": No attendance marked yet.";
-            }
-
-            double percentage = (presentClasses * 100.0) / totalClasses;
-
-            String summary = subjectName + ": Total = " + totalClasses +
-                    ", Present = " + presentClasses +
-                    ", Absent = " + (totalClasses - presentClasses) +
-                    "\nAttendance %: " + String.format("%.2f", percentage) + "%";
-
-            if (percentage < 75) {
-                summary += "\n*** Not eligible for exams in " + subjectName + " ***";
-            }
-
-            return summary;
         }
+
+        int totalDays = dateAttendanceMap.size();
+        int presentDays = 0;
+
+        for (String date : dateAttendanceMap.keySet()) {
+            if (dateAttendanceMap.get(date).contains(studentId)) {
+                presentDays++;
+            }
+        }
+
+        double percentage = totalDays == 0 ? 0 : (presentDays * 100.0) / totalDays;
+
+        StringBuilder summary = new StringBuilder();
+        summary.append(subjectName + ": Total = " + totalDays)
+               .append(", Present = " + presentDays)
+               .append(", Absent = " + (totalDays - presentDays))
+               .append("\nAttendance %: " + String.format("%.2f", percentage) + "%");
+
+        if (percentage >= 75) {
+            summary.append("\nEligible for exams in " + subjectName + ".");
+        } else {
+            summary.append("\n*** Not eligible for exams in " + subjectName + " ***");
+        }
+
+        if (dateAttendanceMap.containsKey(today)) {
+            if (!dateAttendanceMap.get(today).contains(studentId)) {
+                summary.append("\nStatus today: Absent");
+            } else {
+                summary.append("\nStatus today: Present");
+            }
+        } else {
+            summary.append("\nStatus today: Attendance not marked yet");
+        }
+
+        return summary.toString();
     }
-}
+} 
