@@ -3,34 +3,48 @@ Attendify is a comprehensive QR-based Attendance Management System designed for 
 It enables teachers to efficiently mark student attendance using QR code scanning technology, manage attendance records,
 and provides students with detailed access to their attendance summaries. The system is built using Java with 
 object-oriented programming principles and utilizes file-based storage for data persistence.
+
+
 **Features:**
+
 **Teacher Authentication & Security:**
+
 •	Secure teacher login with username and password verification
 •	Progressive lockout mechanism with increasing countdown timers after every 3 failed   login attempts
 •	Account lockout protection to prevent unauthorized access
 •	Enhanced security with retry limitations and time-based access control
+
 **QR Code-Based Attendance:**
+
 •	Real-time webcam integration for QR code scanning
 •	Automatic student identification through QR code decoding
 •	Instant attendance marking with timestamp recording
 •	Duplicate attendance prevention for the same session
+
 **Comprehensive Dashboard:**
+
 •	Teacher dashboard with class-wise attendance history
 •	Detailed statistics showing present, absent, and leave counts
 •	Date-wise attendance tracking and reporting
 •	Subject-specific attendance management
+
 **Student Portal:**
+
 •	Student login system with ID and password authentication
 •	Personal attendance summary across all enrolled subjects
 •	Attendance percentage calculation with exam eligibility status
 •	Real-time attendance tracking and updates
+
 **Advanced Features:**
+
 •	Multi-subject support with enrollment verification
 •	Automatic attendance percentage calculation
 •	Exam eligibility determination based on attendance criteria (75% threshold)
 •	Robust error handling and data validation
 •	Modular design for easy maintenance and scalability
+
 **Pre-requisites:**
+
 •	Java Development Kit (JDK): Version 8 or higher
 •	Integrated Development Environment: Visual Studio Code (recommended) or any Java IDE
 •	Webcam: Enabled on your System
@@ -40,7 +54,9 @@ o	ZXing library for QR code decoding and processing
 •	Operating System: Windows with webcam support
 •	QR code: Use Zxing.appspot.com
 •	Link:  https://zxing.appspot.com/generator
+
 **Files Required:**
+
 **Core Application Files:**
 •	Main.java - Main application entry point and teacher login handler
 •	TeacherAuth.java - Teacher authentication and credential verification
@@ -49,7 +65,9 @@ o	ZXing library for QR code decoding and processing
 •	StudentLogin.java - Student portal and attendance summary display
 •	WebcamReader.java - Webcam integration and frame capture functionality
 •	QRDecoder.java - QR code decoding and student ID extraction
+
 **Data Storage Files:**
+
 •	students.txt - Student database with ID, name, and password (format: ID:Name:Password)
 •	teachers.txt - Teacher credentials and subject assignments (format: Username,Password,Subject)
 •	subjects.txt - Subject enrollment mapping (format: Subject:StudentID1,StudentID2,...)
