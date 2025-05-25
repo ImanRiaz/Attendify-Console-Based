@@ -110,7 +110,7 @@ o	ZXing library for QR code decoding and processing
 
 **How to Run:**
 
-Step 1: Environment Setup
+**Step 1: Environment Setup**
 
 1. Install Java JDK 8 or higher on your system
 
@@ -120,7 +120,7 @@ Step 1: Environment Setup
 
 4. Add ZXing library to your project dependencies
 
-Step 2: Project Setup
+**Step 2: Project Setup**
 
 1. Create a new Java project in your IDE
 
@@ -130,7 +130,7 @@ Step 2: Project Setup
 
 4. Ensure your webcam is connected and functional
 
-Step 3: Library Configuration
+**Step 3: Library Configuration**
 
 1. Add OpenCV JAR file to your project classpath
 
@@ -138,7 +138,7 @@ Step 3: Library Configuration
 
 3. Configure native library path for OpenCV
 
-Step 4: Data File Preparation
+**Step 4: Data File Preparation**
 
 1. Populate students.txt with student information
 
@@ -146,7 +146,7 @@ Step 4: Data File Preparation
 
 3. Configure subject enrollments in subjects.txt and student_<subject>.txt files
 
-Step 5: Application Execution
+**Step 5: Application Execution**
 
 1. Compile all Java files in your IDE
 
