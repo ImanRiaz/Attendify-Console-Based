@@ -4,7 +4,6 @@ It enables teachers to efficiently mark student attendance using QR code scannin
 and provides students with detailed access to their attendance summaries. The system is built using Java with 
 object-oriented programming principles and utilizes file-based storage for data persistence.
 
-
 **Features:**
 
 **Teacher Authentication & Security:**
